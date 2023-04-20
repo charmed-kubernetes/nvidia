@@ -1,0 +1,24 @@
+# This file populates the Overview on Charmhub.
+# See https://juju.is/docs/sdk/metadata-reference for a checklist and guidance.
+
+name: nvidia-network-operator
+display-name: NVIDIA Network Operator
+summary: Simplifies the management of NVIDIA networking resources in a Kubernetes cluster.
+issues: https://bugs.launchpad.net/nvidia-operators
+docs: https://github.com/charmed-kubernetes/nvidia/tree/main/charms/network-operator
+description: |
+  This charm manages the required NVIDIA networking resources to bring together
+  all the needed components to provide high-speed network connectivity. 
+
+containers:
+  network-operator:
+    resource: network-operator-image
+
+resources:
+  network-operator-image:
+    type: oci-image
+    description: OCI Image for the NVIDIA Network Operator
+    upstream-source: rocks.canonical.com/cdk/nvidia/cloud-native/network-operator:v23.1.0
+
+assumes:
+  - k8s-api

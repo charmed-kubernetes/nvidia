@@ -1,0 +1,29 @@
+options:
+  image-registry:
+    type: string
+    default: "rocks.canonical.com/cdk"
+    description: |
+      Image registry for nvidia-network-operator charm images.
+
+      The value set here will replace the host portion of each image URL in the
+      release manifests. If unset, the default registry from the upstream
+      manifest will be used.
+
+      example)
+        juju config nvidia-network-operator image-registry=''
+
+        juju config nvidia-network-operator --reset image-registry
+
+  custom-resources:
+    type: string
+    default: ""
+    description: |
+      YAML defining custom resources used by the NVIDIA Network Operator.
+
+      Custom resources specific to the deployment environment can be configured
+      for this charm. Sample CRs can be found in the upstream repository:
+
+      https://github.com/Mellanox/network-operator/tree/master/example/crs
+
+      example)
+        juju config nvidia-network-operator custom-resources=$(cat ./my-crs.yaml)
