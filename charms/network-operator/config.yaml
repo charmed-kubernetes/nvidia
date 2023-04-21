@@ -1,4 +1,42 @@
 options:
+  custom-resources:
+    type: string
+    default: ""
+    description: |
+      YAML defining custom resources used by the NVIDIA Network Operator.
+
+      Custom resources specific to the deployment environment can be configured
+      for this charm. Sample CRs can be found in the upstream repository:
+
+      https://github.com/Mellanox/network-operator/tree/master/example/crs
+
+      example)
+        cat << EOF > args.yaml
+        ---
+        apiVersion: mellanox.com/v1alpha1
+        kind: NicClusterPolicy
+        metadata:
+          name: nic-cluster-policy
+        spec:
+          ofedDriver:
+            image: mofed
+            ...
+          rdmaSharedDevicePlugin:
+            image: k8s-rdma-shared-dev-plugin
+            ...
+        ---
+        apiVersion: mellanox.com/v1alpha1
+        kind: MacvlanNetwork
+        metadata:
+          name: example-macvlannetwork
+        spec:
+          networkNamespace: "default"
+          mode: "bridge"
+          ...
+        EOF
+
+        juju config nvidia-network-operator custom-resources="$(cat args.yaml)"
+
   image-registry:
     type: string
     default: "rocks.canonical.com/cdk"
@@ -12,18 +50,23 @@ options:
       example)
         juju config nvidia-network-operator image-registry=''
 
-        juju config nvidia-network-operator --reset image-registry
-
-  custom-resources:
+  nfd-worker-conf:
     type: string
-    default: ""
+    default: |
+      sources:
+        custom:
+        pci:
+          deviceClassWhitelist:
+            - "02"
+            - "0200"
+            - "0207"
+          deviceLabelFields:
+            - "vendor"
     description: |
-      YAML defining custom resources used by the NVIDIA Network Operator.
+      YAML defining the Node Feature Discovery (NFD) worker configuration.
 
-      Custom resources specific to the deployment environment can be configured
-      for this charm. Sample CRs can be found in the upstream repository:
-
-      https://github.com/Mellanox/network-operator/tree/master/example/crs
+      For more info, please refer to the upstream documentation at
+      https://github.com/Mellanox/network-operator#kubernetes-node-feature-discovery-nfd
 
       example)
-        juju config nvidia-network-operator custom-resources=$(cat ./my-crs.yaml)
+        juju config nvidia-network-operator --reset nfd-worker-conf

@@ -40,3 +40,19 @@ def test_install_or_upgrade_apierror(harness: Harness, lk_client, api_error_klas
     charm._install_or_upgrade(mock_event)
     mock_event.defer.assert_called_once()
     assert isinstance(charm.unit.status, WaitingStatus)
+
+
+def test_waits_for_config(harness: Harness, lk_client, caplog):
+    harness.begin_with_initial_hooks()
+    with mock.patch.object(lk_client, "list") as mock_list:
+        mock_list.return_value = [mock.Mock(**{"metadata.annotations": {}})]
+        caplog.clear()
+        harness.update_config(
+            {
+                "nfd-worker-conf": "sources: None",
+            }
+        )
+
+        messages = {r.message for r in caplog.records if "manifests" in r.filename}
+
+        assert "Applying Node Feature Discovery ConfigMap Data" in messages

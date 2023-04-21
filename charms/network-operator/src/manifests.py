@@ -7,9 +7,28 @@ import pickle
 from hashlib import md5
 from typing import Dict, Optional
 
-from ops.manifests import ConfigRegistry, ManifestLabel, Manifests
+import yaml
+from ops.manifests import ConfigRegistry, ManifestLabel, Manifests, Patch
 
 log = logging.getLogger(__file__)
+
+
+class ApplyConfigMap(Patch):
+    """Update the ConfigMap as a patch since the manifests includes a default."""
+
+    def __call__(self, obj):
+        """Update the ConfigMap object in the deployment."""
+        if not (
+            obj.kind == "ConfigMap"
+            and obj.metadata.name == "nvidia-charm-node-feature-discovery-worker-conf"
+        ):
+            return
+        config = self.manifests.config.get("nfd-worker-conf")
+        if not isinstance(config, dict):
+            log.error(f"nfd-worker-conf was an unexpected type: {type(config)}")
+            return
+        log.info("Applying Node Feature Discovery ConfigMap Data")
+        obj.data["nfd-worker.conf"] = yaml.safe_dump(config)
 
 
 class NetworkOperatorManifests(Manifests):
@@ -23,6 +42,7 @@ class NetworkOperatorManifests(Manifests):
             [
                 ManifestLabel(self),
                 ConfigRegistry(self),
+                ApplyConfigMap(self),
             ],
         )
         self.charm_config = charm_config

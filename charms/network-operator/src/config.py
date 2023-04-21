@@ -5,21 +5,9 @@
 import logging
 from typing import Optional
 
-from pydantic import BaseModel, Field, ValidationError
+import yaml
 
-log = logging.getLogger(__file__)
-
-
-class CustomResources(BaseModel):
-    """Representation of the custom-resources config."""
-
-    cr_yaml: str = Field(alias="custom-resources")
-
-
-class CustomResourcesError(Exception):
-    """Raised for any issue gathering custom-resources."""
-
-    pass
+log = logging.getLogger(__name__)
 
 
 class CharmConfig:
@@ -27,22 +15,36 @@ class CharmConfig:
 
     def __init__(self, charm):
         """Creates a CharmConfig object from the configuration data."""
-        self.config = charm.config
+        self.charm = charm
 
     @property
-    def custom_resources(self) -> CustomResources:
-        """Get the custom-resources from config."""
-        bad_cr_msg = "invalid custom-resources config."
+    def nfd_worker_conf(self) -> str:
+        """Raw nfd-worker-conf config string, return empty string if falsy."""
+        return self.charm.config.get("nfd-worker-conf") or ""
+
+    @property
+    def safe_nfd_worker_conf(self) -> Optional[dict]:
+        """Parse nfd-worker-conf config into a dict, return None on failure."""
         try:
-            return CustomResources(**self.config)
-        except ValidationError as e:
-            raise CustomResourcesError(bad_cr_msg) from e
+            return yaml.safe_load(self.nfd_worker_conf)
+        except yaml.YAMLError:
+            return None
+
+    def evaluate(self) -> Optional[str]:
+        """Determine if configuration is valid."""
+        try:
+            yaml.safe_load(self.nfd_worker_conf)
+        except yaml.YAMLError:
+            return "Config nfd-worker-conf is invalid."
+        return None
 
     @property
     def available_data(self):
         """Parse valid charm config into a dict, drop keys if unset."""
         data = {}
-        for key, value in self.config.items():
+        for key, value in self.charm.config.items():
+            if key == "nfd-worker-conf":
+                value = self.safe_nfd_worker_conf
             data[key] = value
 
         for key, value in dict(**data).items():
@@ -50,11 +52,3 @@ class CharmConfig:
                 del data[key]
 
         return data
-
-    def evaluate(self) -> Optional[str]:
-        """Determine if configuration is valid."""
-        try:
-            self.custom_resources
-        except CustomResourcesError as e:
-            return str(e)
-        return None
