@@ -7,7 +7,7 @@ import unittest.mock as mock
 
 import ops.testing
 import pytest
-from ops.model import ActiveStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
 from ops.testing import Harness
 
 from charm import NetworkOperatorCharm
@@ -31,15 +31,23 @@ def test_update_status(harness: Harness):
     assert harness.charm.unit.status == ActiveStatus("Ready")
 
 
-def test_install_or_upgrade_apierror(harness: Harness, lk_client, api_error_klass):
-    lk_client.apply.side_effect = api_error_klass
+def test_check_config(harness: Harness, lk_client):
+    """Test invalid config."""
     harness.begin_with_initial_hooks()
-    charm = harness.charm
-    charm.stored.config_hash = "mock_hash"
-    mock_event = mock.MagicMock()
-    charm._install_or_upgrade(mock_event)
-    mock_event.defer.assert_called_once()
-    assert isinstance(charm.unit.status, WaitingStatus)
+    # yaml fail
+    harness.update_config(
+        {
+            "nfd-worker-conf": "foo: '",
+        }
+    )
+    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is not valid YAML.")
+    # schema fail
+    harness.update_config(
+        {
+            "nfd-worker-conf": "foo: bar",
+        }
+    )
+    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is invalid.")
 
 
 def test_waits_for_config(harness: Harness, lk_client, caplog):
@@ -49,10 +57,20 @@ def test_waits_for_config(harness: Harness, lk_client, caplog):
         caplog.clear()
         harness.update_config(
             {
-                "nfd-worker-conf": "sources: None",
+                "nfd-worker-conf": "sources: {}",
             }
         )
 
         messages = {r.message for r in caplog.records if "manifests" in r.filename}
-
         assert "Applying Node Feature Discovery ConfigMap Data" in messages
+
+
+def test_install_or_upgrade_apierror(harness: Harness, lk_client, api_error_klass):
+    lk_client.apply.side_effect = api_error_klass
+    harness.begin_with_initial_hooks()
+    charm = harness.charm
+    charm.stored.config_hash = "mock_hash"
+    mock_event = mock.MagicMock()
+    charm._install_or_upgrade(mock_event)
+    mock_event.defer.assert_called_once()
+    assert isinstance(charm.unit.status, WaitingStatus)

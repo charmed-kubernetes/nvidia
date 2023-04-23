@@ -5,6 +5,7 @@
 import logging
 from typing import Optional
 
+import jsonschema
 import yaml
 
 log = logging.getLogger(__name__)
@@ -12,6 +13,14 @@ log = logging.getLogger(__name__)
 
 class CharmConfig:
     """Representation of the charm configuration."""
+
+    NFD_SCHEMA = dict(
+        type="object",
+        properties={
+            "sources": dict(type="object"),
+        },
+        required=["sources"],
+    )
 
     def __init__(self, charm):
         """Creates a CharmConfig object from the configuration data."""
@@ -32,10 +41,15 @@ class CharmConfig:
 
     def evaluate(self) -> Optional[str]:
         """Determine if configuration is valid."""
-        try:
-            yaml.safe_load(self.nfd_worker_conf)
-        except yaml.YAMLError:
-            return "Config nfd-worker-conf is invalid."
+        nfd_conf = self.safe_nfd_worker_conf
+        if nfd_conf:
+            try:
+                jsonschema.validate(nfd_conf, self.NFD_SCHEMA)
+            except jsonschema.ValidationError:
+                return "nfd-worker-conf is invalid."
+        else:
+            return "nfd-worker-conf is not valid YAML."
+
         return None
 
     @property

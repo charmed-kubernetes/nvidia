@@ -54,7 +54,6 @@ options:
     type: string
     default: |
       sources:
-        custom:
         pci:
           deviceClassWhitelist:
             - "02"
