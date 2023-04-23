@@ -43,9 +43,8 @@ options:
     description: |
       Image registry for nvidia-network-operator charm images.
 
-      The value set here will replace the host portion of each image URL in the
-      release manifests. If unset, the default registry from the upstream
-      manifest will be used.
+      The value set here will replace the host portion of each image URL in the release
+      manifests. If unset, the default registry from upstream manifests will be used.
 
       example)
         juju config nvidia-network-operator image-registry=''
@@ -62,10 +61,44 @@ options:
           deviceLabelFields:
             - "vendor"
     description: |
-      YAML defining the Node Feature Discovery (NFD) worker configuration.
+      Defines the Node Feature Discovery (NFD) worker configuration.
 
-      For more info, please refer to the upstream documentation at
+      Refer to the NVIDIA documentation for additional NFD configuration options:
       https://github.com/Mellanox/network-operator#kubernetes-node-feature-discovery-nfd
 
       example)
         juju config nvidia-network-operator --reset nfd-worker-conf
+
+  nic-cluster-policy:
+    type: string
+    default: |
+      ---
+      apiVersion: mellanox.com/v1alpha1
+      kind: NicClusterPolicy
+      metadata:
+        name: nic-cluster-policy
+      ...
+    description: |
+      Defines the NicClusterPolicy custom resource.
+
+      The default value represents the bare miminum definition of a NicClusterPolicy.
+      Refer to the NVIDIA documentation for additional options:
+      https://github.com/Mellanox/network-operator#nicclusterpolicy-crd
+
+      NOTE: the metadata name for this resource must be 'nic-cluster-policy'
+
+      example)
+        cat << EOF > policy.yaml
+        ---
+        apiVersion: mellanox.com/v1alpha1
+        kind: NicClusterPolicy
+        metadata:
+          name: nic-cluster-policy
+        spec:
+          $state1:
+            $attr1
+          $state2:
+            $attr1
+        EOF
+
+        juju config nvidia-network-operator nic-cluster-policy="$(cat policy.yaml)"

@@ -7,7 +7,7 @@ import unittest.mock as mock
 
 import ops.testing
 import pytest
-from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.testing import Harness
 
 from charm import NetworkOperatorCharm
@@ -34,20 +34,47 @@ def test_update_status(harness: Harness):
 def test_check_config(harness: Harness, lk_client):
     """Test invalid config."""
     harness.begin_with_initial_hooks()
-    # yaml fail
+    reset_conf = {"key_values": {}, "unset": ("nfd-worker-conf", "nic-cluster-policy")}
+
+    # test valid config
+    harness.update_config(**reset_conf)
+    harness.update_config(
+        {
+            "nfd-worker-conf": "sources: {}",
+            "nic-cluster-policy": "kind: NicClusterPolicy",
+        }
+    )
+    assert harness.charm.unit.status == MaintenanceStatus("Deploying NVIDIA Network Operator")
+
+    # test nfd-worker-conf
+    harness.update_config(**reset_conf)
     harness.update_config(
         {
             "nfd-worker-conf": "foo: '",
         }
     )
-    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is not valid YAML.")
-    # schema fail
+    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is not valid YAML")
     harness.update_config(
         {
             "nfd-worker-conf": "foo: bar",
         }
     )
-    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is invalid.")
+    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is invalid")
+
+    # test nic-cluster-policy
+    harness.update_config(**reset_conf)
+    harness.update_config(
+        {
+            "nic-cluster-policy": "foo: '",
+        }
+    )
+    assert harness.charm.unit.status == BlockedStatus("nic-cluster-policy is not valid YAML")
+    harness.update_config(
+        {
+            "nic-cluster-policy": "foo: bar",
+        }
+    )
+    assert harness.charm.unit.status == BlockedStatus("nic-cluster-policy is invalid")
 
 
 def test_waits_for_config(harness: Harness, lk_client, caplog):

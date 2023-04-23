@@ -21,6 +21,13 @@ class CharmConfig:
         },
         required=["sources"],
     )
+    POLICY_SCHEMA = dict(
+        type="object",
+        properties={
+            "kind": dict(const="NicClusterPolicy"),
+        },
+        required=["kind"],
+    )
 
     def __init__(self, charm):
         """Creates a CharmConfig object from the configuration data."""
@@ -32,10 +39,24 @@ class CharmConfig:
         return self.charm.config.get("nfd-worker-conf") or ""
 
     @property
+    def nic_cluster_policy(self) -> str:
+        """Raw nic-cluster-policy config string, return empty string if falsy."""
+        return self.charm.config.get("nic-cluster-policy") or ""
+
+    @property
     def safe_nfd_worker_conf(self) -> Optional[dict]:
-        """Parse nfd-worker-conf config into a dict, return None on failure."""
+        """YAML representation of nfd-worker-conf."""
+        return self._safe_yaml(self.nfd_worker_conf)
+
+    @property
+    def safe_nic_cluster_policy(self) -> Optional[dict]:
+        """YAML representation of nic-cluster-policy."""
+        return self._safe_yaml(self.nic_cluster_policy)
+
+    def _safe_yaml(self, conf: str) -> Optional[dict]:
+        """Parse yaml config string into a dict, return None on failure."""
         try:
-            return yaml.safe_load(self.nfd_worker_conf)
+            return yaml.safe_load(conf)
         except yaml.YAMLError:
             return None
 
@@ -46,9 +67,18 @@ class CharmConfig:
             try:
                 jsonschema.validate(nfd_conf, self.NFD_SCHEMA)
             except jsonschema.ValidationError:
-                return "nfd-worker-conf is invalid."
+                return "nfd-worker-conf is invalid"
         else:
-            return "nfd-worker-conf is not valid YAML."
+            return "nfd-worker-conf is not valid YAML"
+
+        nic_policy = self.safe_nic_cluster_policy
+        if nic_policy:
+            try:
+                jsonschema.validate(nic_policy, self.POLICY_SCHEMA)
+            except jsonschema.ValidationError:
+                return "nic-cluster-policy is invalid"
+        else:
+            return "nic-cluster-policy is not valid YAML"
 
         return None
 
@@ -59,6 +89,8 @@ class CharmConfig:
         for key, value in self.charm.config.items():
             if key == "nfd-worker-conf":
                 value = self.safe_nfd_worker_conf
+            elif key == "nic-cluster-policy":
+                value = self.safe_nic_cluster_policy
             data[key] = value
 
         for key, value in dict(**data).items():
