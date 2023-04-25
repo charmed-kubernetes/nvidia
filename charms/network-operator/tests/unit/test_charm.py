@@ -41,34 +41,22 @@ def test_check_config(harness: Harness, lk_client):
     harness.update_config(
         {
             "nfd-worker-conf": "sources: {}",
-            "nic-cluster-policy": "kind: NicClusterPolicy",
+            "nic-cluster-policy": "apiVersion: mellanox.com/v1alpha1\nkind: NicClusterPolicy\nmetadata: {}",
         }
     )
     assert harness.charm.unit.status == MaintenanceStatus("Deploying NVIDIA Network Operator")
 
-    # test nfd-worker-conf
+    # test invalid yaml
     harness.update_config(**reset_conf)
     harness.update_config(
         {
             "nfd-worker-conf": "foo: '",
         }
     )
-    assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is not valid YAML")
-    harness.update_config(
-        {
-            "nfd-worker-conf": "foo: bar",
-        }
-    )
     assert harness.charm.unit.status == BlockedStatus("nfd-worker-conf is invalid")
 
-    # test nic-cluster-policy
+    # test invalid schema
     harness.update_config(**reset_conf)
-    harness.update_config(
-        {
-            "nic-cluster-policy": "foo: '",
-        }
-    )
-    assert harness.charm.unit.status == BlockedStatus("nic-cluster-policy is not valid YAML")
     harness.update_config(
         {
             "nic-cluster-policy": "foo: bar",
@@ -79,17 +67,18 @@ def test_check_config(harness: Harness, lk_client):
 
 def test_waits_for_config(harness: Harness, lk_client, caplog):
     harness.begin_with_initial_hooks()
-    with mock.patch.object(lk_client, "list") as mock_list:
-        mock_list.return_value = [mock.Mock(**{"metadata.annotations": {}})]
-        caplog.clear()
-        harness.update_config(
-            {
-                "nfd-worker-conf": "sources: {}",
-            }
-        )
+    caplog.clear()
+    harness.update_config(
+        {
+            "nfd-worker-conf": "sources: {}",
+            "nic-cluster-policy": "apiVersion: mellanox.com/v1alpha1\nkind: NicClusterPolicy\nmetadata: {}",
+        }
+    )
 
-        messages = {r.message for r in caplog.records if "manifests" in r.filename}
-        assert "Applying Node Feature Discovery ConfigMap Data" in messages
+    messages = {r.message for r in caplog.records if r.filename == "manifests.py"}
+    assert messages == {
+        "Applying Node Feature Discovery ConfigMap Data",
+    }
 
 
 def test_install_or_upgrade_apierror(harness: Harness, lk_client, api_error_klass):
