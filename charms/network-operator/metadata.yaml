@@ -4,11 +4,13 @@
 name: nvidia-network-operator
 display-name: NVIDIA Network Operator
 summary: Simplifies the management of NVIDIA networking resources in a Kubernetes cluster.
-issues: https://bugs.launchpad.net/nvidia-operators
-docs: https://github.com/charmed-kubernetes/nvidia/tree/main/charms/network-operator
+maintainers:
+  - Kevin Monroe <kevin.monroe@canonical.com>
 description: |
   This charm manages the required NVIDIA networking resources to bring together
   all the needed components to provide high-speed network connectivity. 
+docs: https://github.com/charmed-kubernetes/nvidia/tree/main/charms/network-operator
+issues: https://bugs.launchpad.net/nvidia-operators
 
 containers:
   network-operator:
