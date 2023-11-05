@@ -41,7 +41,7 @@ options:
     description: |
       Defines the NicClusterPolicy custom resource.
 
-      The default value represents the bare miminum definition of a NicClusterPolicy.
+      The default value represents the bare minimum definition of a NicClusterPolicy.
       Refer to the NVIDIA documentation for additional options:
       https://github.com/Mellanox/network-operator#nicclusterpolicy-crd
 

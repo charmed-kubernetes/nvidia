@@ -100,7 +100,7 @@ class NetworkOperatorCharm(CharmBase):
                 controller.apply_charm_manifests()
             except ManifestClientError as e:
                 self.unit.status = WaitingStatus("Waiting for kube-apiserver")
-                log.warn(f"Encountered retryable installation error: {e}")
+                log.warning(f"Encountered retryable installation error: {e}")
                 event.defer()
                 return False
         return True
