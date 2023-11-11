@@ -1,0 +1,34 @@
+options:
+  image-registry:
+    type: string
+    default: ""
+    description: |
+      Image registry for nvidia-gpu-operator charm images.
+
+      The value set here will replace the host portion of each image URL in the release
+      manifests. If unset, the default registry from upstream manifests will be used.
+
+      example)
+        juju config nvidia-gpu-operator image-registry=''
+
+  nfd-worker-conf:
+    type: string
+    default: |
+      sources:
+        pci:
+          deviceClassWhitelist:
+          - "02"
+          - "0200"
+          - "0207"
+          - "0300"
+          - "0302"
+          deviceLabelFields:
+          - vendor
+      description: |
+      Defines the Node Feature Discovery (NFD) worker configuration.
+
+      Refer to the NVIDIA documentation for additional NFD configuration options:
+      https://kubernetes-sigs.github.io/node-feature-discovery/v0.14/reference/worker-configuration-reference.html
+
+      example)
+        juju config nvidia-network-operator --reset nfd-worker-conf

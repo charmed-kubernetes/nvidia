@@ -1,0 +1,26 @@
+# This file populates the Overview on Charmhub.
+# See https://juju.is/docs/sdk/metadata-reference for a checklist and guidance.
+
+name: nvidia-gpu-operator
+display-name: NVIDIA GPU Operator
+summary: Simplifies the management of NVIDIA GPU resources in a Kubernetes cluster.
+maintainers:
+  - Kevin Monroe <kevin.monroe@canonical.com>
+description: |
+  This charm manages the required NVIDIA GPU resources to bring together
+  all the needed components to provide high-performance computing.
+docs: https://github.com/charmed-kubernetes/nvidia/tree/main/charms/gpu-operator
+issues: https://bugs.launchpad.net/nvidia-operators
+
+containers:
+  gpu-operator:
+    resource: gpu-operator-image
+
+resources:
+  gpu-operator-image:
+    type: oci-image
+    description: OCI Image for the NVIDIA GPU Operator
+    upstream-source: nvcr.io/nvidia/gpu-operator:v23.9.0
+
+assumes:
+  - k8s-api
