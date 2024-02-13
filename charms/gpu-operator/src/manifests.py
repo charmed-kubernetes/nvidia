@@ -1,16 +1,19 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Implementation of nvidia-gpu-operator kubernetes manifests."""
 
 import logging
 import pickle
 from hashlib import md5
-from typing import Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional
 
 import yaml
-from lightkube.codecs import AnyResource, from_dict
+from lightkube.codecs import AnyResource
+from lightkube.core.resource import NamespacedResource
 from ops.manifests import ConfigRegistry, ManifestLabel, Manifests, Patch
-from ops.manifests.manipulations import HashableResource
+
+if TYPE_CHECKING:
+    from charm import GPUOperatorCharm
 
 log = logging.getLogger(__file__)
 
@@ -33,10 +36,28 @@ class ApplyNFDConfigMap(Patch):
         obj.data["nfd-worker.conf"] = yaml.safe_dump(config)
 
 
+class PatchNamespace(Patch):
+    """Adjust resource namespace."""
+
+    def __call__(self, obj: AnyResource) -> None:
+        """Replace namespace if object supports it."""
+        ns = self.manifests.config["namespace"]
+
+        if obj.kind in ["ClusterRoleBinding", "RoleBinding"]:
+            for each in obj.subjects:
+                if each.kind == "ServiceAccount":
+                    log.info(f"Patching namespace for {each.kind} {each.name} to {ns}")
+                    each.namespace = ns
+
+        if isinstance(obj, NamespacedResource) and obj.metadata:
+            log.info(f"Patching namespace for {obj.kind} {obj.metadata.name} to {ns}")
+            obj.metadata.namespace = ns
+
+
 class GPUOperatorManifests(Manifests):
     """Deployment details for nvidia-gpu-operator."""
 
-    def __init__(self, charm, charm_config):
+    def __init__(self, charm: "GPUOperatorCharm", charm_config):
         super().__init__(
             "gpu-operator",
             charm.model,
@@ -45,8 +66,10 @@ class GPUOperatorManifests(Manifests):
                 ManifestLabel(self),
                 ConfigRegistry(self),
                 ApplyNFDConfigMap(self),
+                PatchNamespace(self),
             ],
         )
+        self.charm = charm
         self.charm_config = charm_config
 
     @property
@@ -59,6 +82,7 @@ class GPUOperatorManifests(Manifests):
             if value == "" or value is None:
                 del config[key]
 
+        config["namespace"] = self.charm.stored.namespace
         return config
 
     def hash(self) -> int:
