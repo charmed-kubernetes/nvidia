@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-#
-# Learn more at: https://juju.is/docs/sdk
-
-"""Charm the service.
-
-Refer to the following post for a quick-start guide that will help you
-develop a new k8s charm using the Operator Framework:
-
-https://discourse.charmhub.io/t/4208
-"""
+"""Dispatch logic for the nvidia-gpu-operator charm."""
 
 import logging
+from typing import cast
 
 from ops.charm import CharmBase
 from ops.framework import StoredState
@@ -29,6 +21,8 @@ log = logging.getLogger(__name__)
 class GPUOperatorCharm(CharmBase):
     """Charm the service."""
 
+    DEFAULT_NAMESPACE = "default"
+
     stored = StoredState()
 
     def __init__(self, *args):
@@ -39,6 +33,7 @@ class GPUOperatorCharm(CharmBase):
         self.stored.set_default(
             config_hash=None,  # hashed value of the applied config once valid
             deployed=False,  # True if the config has been applied after new hash
+            namespace=self._configured_ns,
         )
         self.collector = Collector(
             GPUOperatorManifests(self, self.charm_config),
@@ -50,13 +45,24 @@ class GPUOperatorCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._merge_config)
         self.framework.observe(self.on.stop, self._cleanup)
 
+    @property
+    def _configured_ns(self) -> str:
+        """Currently configured namespace."""
+        return self.config["namespace"] or self.DEFAULT_NAMESPACE
+
     def _update_status(self, _):
-        if not self.stored.deployed:
+        if not cast(bool, self.stored.deployed):
             return
+        self.unit.status = MaintenanceStatus("Updating Status")
 
         unready = self.collector.unready
+        current_ns, config_ns = self.stored.namespace, self._configured_ns
         if unready:
             self.unit.status = WaitingStatus(", ".join(unready))
+        elif current_ns != config_ns:
+            self.unit.status = BlockedStatus(
+                f"Namespace '{current_ns}' cannot be configured to '{config_ns}'"
+            )
         else:
             self.unit.status = ActiveStatus("Ready")
             self.unit.set_workload_version(self.collector.short_version)

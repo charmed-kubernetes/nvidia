@@ -9,7 +9,20 @@ options:
       manifests. If unset, the default registry from upstream manifests will be used.
 
       example)
-        juju config nvidia-gpu-operator image-registry=''
+        juju config nvidia-gpu-operator image-registry=""
+
+  namespace:
+    type: string
+    default: ""
+    description: |
+      Kubernetes namespace in which to install the GPU operator components including
+      deployments, daemonsets, configmaps.
+
+      If unset, "default" is assumed.
+
+      NOTE: This can only be specified during initial charm deployment since some
+      attributes of kubernetes resources are non-modifiable. The admin is responsible
+      for ensuring the namespace exists prior to deployment.
 
   nfd-worker-conf:
     type: string
@@ -24,11 +37,11 @@ options:
           - "0302"
           deviceLabelFields:
           - vendor
-      description: |
+    description: |
       Defines the Node Feature Discovery (NFD) worker configuration.
 
       Refer to the NVIDIA documentation for additional NFD configuration options:
       https://kubernetes-sigs.github.io/node-feature-discovery/v0.14/reference/worker-configuration-reference.html
 
       example)
-        juju config nvidia-network-operator --reset nfd-worker-conf
+        juju config nvidia-gpu-operator --reset nfd-worker-conf
