@@ -10,13 +10,13 @@ import yaml
 
 log = logging.getLogger(__name__)
 
-NFD_SCHEMA = dict(
-    type="object",
-    properties={
-        "sources": dict(type="object"),
+NFD_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "sources": {"type": "object"},
     },
-    required=["sources"],
-)
+    "required": ["sources"],
+}
 
 
 class CharmConfig:
@@ -56,9 +56,7 @@ class CharmConfig:
     @property
     def available_data(self):
         """Parse valid charm config into a dict, drop keys if unset."""
-        data = {
-            "namespace": self.charm.stored.namespace
-        }
+        data = {"namespace": self.charm.stored.namespace}
         safe_data = {
             "nfd-worker-conf": self._safe_yaml(self.nfd_worker_conf),
         }

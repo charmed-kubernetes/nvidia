@@ -6,14 +6,13 @@
 import logging
 from typing import cast
 
+from config import CharmConfig
+from manifests import GPUOperatorManifests
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
 from ops.manifests import Collector, ManifestClientError
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
-
-from config import CharmConfig
-from manifests import GPUOperatorManifests
 
 log = logging.getLogger(__name__)
 
@@ -69,7 +68,7 @@ class GPUOperatorCharm(CharmBase):
             self.app.status = ActiveStatus(self.collector.long_version)
 
     def _check_config(self):
-        self.unit.status = MaintenanceStatus("Evaluating charm config.")
+        self.unit.status = MaintenanceStatus("Evaluating charm config")
         evaluation = self.charm_config.evaluate()
         if evaluation:
             self.unit.status = BlockedStatus(evaluation)

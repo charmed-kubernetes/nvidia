@@ -16,6 +16,7 @@ options:
     default: |
       sources:
         pci:
+          # wokeignore:rule=whitelist
           deviceClassWhitelist:
             - "02"
             - "0200"
