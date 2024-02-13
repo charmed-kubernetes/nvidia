@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Config Management for the nvidia-gpu-operator charm."""
 
@@ -56,7 +56,9 @@ class CharmConfig:
     @property
     def available_data(self):
         """Parse valid charm config into a dict, drop keys if unset."""
-        data = {}
+        data = {
+            "namespace": self.charm.stored.namespace
+        }
         safe_data = {
             "nfd-worker-conf": self._safe_yaml(self.nfd_worker_conf),
         }
