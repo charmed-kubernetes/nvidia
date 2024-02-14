@@ -54,8 +54,15 @@ class GPUOperatorCharm(CharmBase):
             return
         self.unit.status = MaintenanceStatus("Updating Status")
 
-        unready = self.collector.unready
+        conditions = self.collector.conditions
+        # FIXME: workaround collector.unready because one of the gpu-operator conditions is 'Error'
+        unready = sorted(
+            f"{name}: {obj} is not {cond.type}"
+            for (name, obj), cond in conditions.items()
+            if cond.status != "True" and cond.type != "Error"
+        )
         current_ns, config_ns = self.stored.namespace, self._configured_ns
+
         if unready:
             self.unit.status = WaitingStatus(", ".join(unready))
         elif current_ns != config_ns:
