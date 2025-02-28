@@ -6,7 +6,7 @@ on:
 jobs:
   call-inclusive-naming-check:
     name: Inclusive naming
-    uses: canonical-web-and-design/Inclusive-naming/.github/workflows/woke.yaml@main
+    uses: canonical/inclusive-naming/.github/workflows/woke.yaml@main
     with:
       fail-on-error: "true"
 
@@ -16,4 +16,4 @@ jobs:
     needs:
       - call-inclusive-naming-check
     with:
-      python: "['3.10', '3.11']"
+      with-uv: true

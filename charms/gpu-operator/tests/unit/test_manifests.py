@@ -6,8 +6,9 @@
 
 import ops.testing
 import pytest
-from charm import GPUOperatorCharm
 from ops.testing import Harness
+
+from charm import GPUOperatorCharm
 
 ops.testing.SIMULATE_CAN_CONNECT = True
 
