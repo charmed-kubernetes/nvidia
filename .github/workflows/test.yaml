@@ -16,4 +16,4 @@ jobs:
     needs:
       - call-inclusive-naming-check
     with:
-      python: "['3.10', '3.11']"
+      with-uv: true
