@@ -6,13 +6,14 @@
 import logging
 from typing import cast
 
-from config import CharmConfig
-from manifests import GPUOperatorManifests
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
 from ops.manifests import Collector, ManifestClientError
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
+
+from config import CharmConfig
+from manifests import GPUOperatorManifests
 
 log = logging.getLogger(__name__)
 

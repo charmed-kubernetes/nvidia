@@ -7,9 +7,10 @@ import unittest.mock as mock
 
 import ops.testing
 import pytest
-from charm import GPUOperatorCharm
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.testing import Harness
+
+from charm import GPUOperatorCharm
 
 ops.testing.SIMULATE_CAN_CONNECT = True
 
