@@ -87,7 +87,7 @@ class GPUOperatorManifests(Manifests):
 
     def hash(self) -> int:
         """Calculate a hash of the current configuration."""
-        return int(md5(pickle.dumps(self.config)).hexdigest(), 16)
+        return int(md5(pickle.dumps(self.config)).hexdigest(), 16) # nosec B324
 
     def evaluate(self) -> Optional[str]:
         """Determine if config can be applied to manifests."""
