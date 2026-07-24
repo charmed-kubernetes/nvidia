@@ -7,9 +7,10 @@ from unittest import mock
 
 import ops.testing
 import pytest
-from charm import NetworkOperatorCharm
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.testing import Harness
+
+from charm import NetworkOperatorCharm
 
 ops.testing.SIMULATE_CAN_CONNECT = True
 

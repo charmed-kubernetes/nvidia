@@ -3,7 +3,7 @@
 #
 # Learn more about testing at: https://juju.is/docs/sdk/testing
 
-import unittest.mock as mock
+from unittest import mock
 
 import pytest
 from lightkube import ApiError

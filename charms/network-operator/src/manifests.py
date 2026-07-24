@@ -5,14 +5,13 @@
 import logging
 import pickle
 from hashlib import md5
-from typing import Dict, Optional
 
 import yaml
 from lightkube.codecs import AnyResource, from_dict
 from ops.manifests import ConfigRegistry, ManifestLabel, Manifests, Patch
 from ops.manifests.manipulations import HashableResource
 
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 
 
 class ApplyNFDConfigMap(Patch):
@@ -50,9 +49,9 @@ class NetworkOperatorManifests(Manifests):
         self.charm_config = charm_config
 
     @property
-    def config(self) -> Dict:
+    def config(self) -> dict:
         """Returns config mapped from charm config and joined relations."""
-        config: Dict = {}
+        config: dict = {}
         config.update(**self.charm_config.available_data)
 
         for key, value in dict(**config).items():
@@ -62,7 +61,7 @@ class NetworkOperatorManifests(Manifests):
         return config
 
     @property
-    def nic_policy(self) -> Optional[AnyResource]:
+    def nic_policy(self) -> AnyResource | None:
         """Returns the nic-cluster-policy config manifest as a resource."""
         conf = self.config.get("nic-cluster-policy")
         return HashableResource(from_dict(conf)) if conf else None
@@ -71,7 +70,7 @@ class NetworkOperatorManifests(Manifests):
         """Calculate a hash of the current configuration."""
         return int(md5(pickle.dumps(self.config)).hexdigest(), 16)
 
-    def evaluate(self) -> Optional[str]:
+    def evaluate(self) -> str | None:
         """Determine if config can be applied to manifests."""
         if not self.config.get("nic-cluster-policy"):
             return "Manifests waiting for nic-cluster-policy config"
