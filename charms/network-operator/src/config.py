@@ -3,6 +3,7 @@
 """Config Management for the nvidia-network-operator charm."""
 
 import logging
+from typing import Dict, Optional
 
 import jsonschema
 import yaml
@@ -43,7 +44,7 @@ class CharmConfig:
         """Raw nic-cluster-policy config string."""
         return self.charm.config.get("nic-cluster-policy", "")
 
-    def _safe_yaml(self, conf: str) -> dict | None:
+    def _safe_yaml(self, conf: str) -> Optional[Dict]:
         """Parse yaml config string into a dict, return None on failure."""
         try:
             return yaml.safe_load(conf)
@@ -58,7 +59,7 @@ class CharmConfig:
             return False
         return True
 
-    def evaluate(self) -> str | None:
+    def evaluate(self) -> Optional[str]:
         """Determine if configuration is valid."""
         nfd_yaml = self._safe_yaml(self.nfd_worker_conf)
         if not (nfd_yaml and self._is_valid(nfd_yaml, NFD_SCHEMA)):

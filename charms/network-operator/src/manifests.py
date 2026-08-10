@@ -5,6 +5,7 @@
 import logging
 import pickle
 from hashlib import md5
+from typing import Optional
 
 import yaml
 from lightkube.codecs import AnyResource, from_dict
@@ -61,7 +62,7 @@ class NetworkOperatorManifests(Manifests):
         return config
 
     @property
-    def nic_policy(self) -> AnyResource | None:
+    def nic_policy(self) -> Optional[AnyResource]:
         """Returns the nic-cluster-policy config manifest as a resource."""
         conf = self.config.get("nic-cluster-policy")
         return HashableResource(from_dict(conf)) if conf else None
@@ -70,7 +71,7 @@ class NetworkOperatorManifests(Manifests):
         """Calculate a hash of the current configuration."""
         return int(md5(pickle.dumps(self.config)).hexdigest(), 16)
 
-    def evaluate(self) -> str | None:
+    def evaluate(self) -> Optional[str]:
         """Determine if config can be applied to manifests."""
         if not self.config.get("nic-cluster-policy"):
             return "Manifests waiting for nic-cluster-policy config"
