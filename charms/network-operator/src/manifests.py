@@ -5,14 +5,14 @@
 import logging
 import pickle
 from hashlib import md5
-from typing import Optional
+from typing import Dict, Optional
 
 import yaml
 from lightkube.codecs import AnyResource, from_dict
 from ops.manifests import ConfigRegistry, ManifestLabel, Manifests, Patch
 from ops.manifests.manipulations import HashableResource
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(__file__)
 
 
 class ApplyNFDConfigMap(Patch):
@@ -50,9 +50,9 @@ class NetworkOperatorManifests(Manifests):
         self.charm_config = charm_config
 
     @property
-    def config(self) -> dict:
+    def config(self) -> Dict:
         """Returns config mapped from charm config and joined relations."""
-        config: dict = {}
+        config: Dict = {}
         config.update(**self.charm_config.available_data)
 
         for key, value in dict(**config).items():

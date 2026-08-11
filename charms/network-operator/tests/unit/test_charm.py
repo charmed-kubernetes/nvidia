@@ -3,7 +3,7 @@
 #
 # Learn more about testing at: https://juju.is/docs/sdk/testing
 
-from unittest import mock
+import unittest.mock as mock
 
 import ops.testing
 import pytest

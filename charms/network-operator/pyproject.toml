@@ -18,10 +18,6 @@ target-version = ["py38"]
 line_length = 99
 profile = "black"
 
-[tool.ruff]
-target-version = "py38"
-ignore = ["FA100"]
-
 # Linting tools configuration
 [tool.flake8]
 max-line-length = 99

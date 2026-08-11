@@ -3,29 +3,29 @@
 """Config Management for the nvidia-network-operator charm."""
 
 import logging
-from typing import Dict, Optional
+from typing import Optional
 
 import jsonschema
 import yaml
 
 log = logging.getLogger(__name__)
 
-NFD_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "sources": {"type": "object"},
+NFD_SCHEMA = dict(
+    type="object",
+    properties={
+        "sources": dict(type="object"),
     },
-    "required": ["sources"],
-}
-POLICY_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "apiVersion": {"type": "string"},
-        "kind": {"const": "NicClusterPolicy"},
-        "metadata": {"type": "object"},
+    required=["sources"],
+)
+POLICY_SCHEMA = dict(
+    type="object",
+    properties={
+        "apiVersion": dict(type="string"),
+        "kind": dict(const="NicClusterPolicy"),
+        "metadata": dict(type="object"),
     },
-    "required": ["apiVersion", "kind", "metadata"],
-}
+    required=["apiVersion", "kind", "metadata"],
+)
 
 
 class CharmConfig:
@@ -44,7 +44,7 @@ class CharmConfig:
         """Raw nic-cluster-policy config string."""
         return self.charm.config.get("nic-cluster-policy", "")
 
-    def _safe_yaml(self, conf: str) -> Optional[Dict]:
+    def _safe_yaml(self, conf: str) -> Optional[dict]:
         """Parse yaml config string into a dict, return None on failure."""
         try:
             return yaml.safe_load(conf)
