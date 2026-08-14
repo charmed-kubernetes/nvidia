@@ -20,7 +20,7 @@ resources:
   network-operator-image:
     type: oci-image
     description: OCI Image for the NVIDIA Network Operator
-    upstream-source: rocks.canonical.com/cdk/nvidia/cloud-native/network-operator:v23.1.0
+    upstream-source: ghcr.io/canonical/cdk/nvidia/cloud-native/network-operator:v23.1.0
 
 assumes:
   - k8s-api

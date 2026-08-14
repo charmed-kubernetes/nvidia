@@ -1,7 +1,7 @@
 options:
   image-registry:
     type: string
-    default: "rocks.canonical.com/cdk"
+    default: "ghcr.io/canonical/cdk"
     description: |
       Image registry for nvidia-network-operator charm images.
 
